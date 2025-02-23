@@ -16,7 +16,7 @@ type Wallet struct {
 func CreateWallet(tx *gorm.DB, id uint, password string) int {
 	var wallet Wallet
 	wallet.Cid = id
-	wallet.Balance = 0
+	wallet.Balance = 1000
 	wallet.Password = password
 	err := tx.Model(&Wallet{}).Create(&wallet).Error
 	if err != nil {
@@ -51,4 +51,16 @@ func DeductBalance(tx *gorm.DB, cid uint, price float64) int {
 	}
 	return errmsg.SUCCESS
 
+}
+
+func CheckPassword(tx *gorm.DB, cid uint, password string) (code int, ok bool) {
+	var wallet Wallet
+	err := tx.Where("cid = ?", cid).First(&wallet).Error
+	if err != nil {
+		return errmsg.ERROR_WALLET_NOT_EXIST, false
+	}
+	if wallet.Password != password {
+		return errmsg.ERROR_WALLET_PASSWORD_WRONG, false
+	}
+	return errmsg.SUCCESS, true
 }

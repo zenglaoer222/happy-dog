@@ -27,6 +27,23 @@ func Login(c *gin.Context) {
 	})
 }
 
+func ShopLogin(c *gin.Context) {
+	var data model.Shop
+	_ = c.ShouldBindJSON(&data)
+	var token string
+	sid, code := model.ShopLogin(model.DB, data.ShopName, data.Password)
+	if code == errmsg.SUCCESS {
+		token, _ = middleware.SetToken(data.ShopName, "shop", sid)
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"id":      sid,
+		"status":  code,
+		"message": errmsg.GetErrMsg(code),
+		"token":   token,
+	})
+
+}
+
 func ManagerLogin(c *gin.Context) {
 	var data model.Manager
 	_ = c.ShouldBindJSON(&data)

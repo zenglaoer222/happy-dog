@@ -67,6 +67,7 @@ func (u *userSet) SendMsg(MessageData string, From, To int) int {
 
 	// 判断是否在线
 	if _, ok := u.users[To]; !ok {
+		model.StoreMessage(From, To, MessageData)
 		return errmsg.ERROR
 	}
 	message := msg{

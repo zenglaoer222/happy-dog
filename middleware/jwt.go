@@ -1,11 +1,13 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"happy-dog/utils"
 	"happy-dog/utils/errmsg"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -23,7 +25,6 @@ type MyClaims struct {
 // 生成token
 func SetToken(username string, role string, cid uint) (string, int) {
 	expireTime := time.Now().Add(10 * time.Hour)
-	//这里传入role来区分manager,customer以及shop
 	setClaims := MyClaims{
 		Username: username,
 		Role:     role,
@@ -96,6 +97,7 @@ func JwtToken() gin.HandlerFunc {
 		// 检查用户角色
 		role := claims.Role
 		requestPath := c.Request.URL.Path
+		fmt.Println(requestPath)
 
 		// 定义不同角色的可访问路由
 		publicRoutes := map[string]bool{
@@ -103,26 +105,36 @@ func JwtToken() gin.HandlerFunc {
 			"/api/v1/customer/login": true,
 			"/api/v1/manager/login":  true,
 		}
-		protectedRoutes := map[string]bool{
-			"/api/v1/customer/:id":    true,
-			"/api/v1/shop/:id":        true,
-			"/api/v1/order/add":       true,
-			"/api/v1/product/add":     true,
-			"/api/v1/wallet/add":      true,
-			"/api/v1/wallet/balance":  true,
-			"/api/v1/order":           true,
-			"/api/v1/customer/update": true,
-			"/api/v1/shop":            true,
-			"/api/v1/friends/add":     true,
-			"/api/v1/friends":         true,
-			"/api/v1/friends/wait":    true,
-			"/api/v1/friends/accept":  true,
-			"/api/v1/friends/search":  true,
+
+		// 使用正则表达式定义 protectedRoutes
+		protected_shop_Routes := map[*regexp.Regexp]bool{
+
+			regexp.MustCompile(`^/api/v1/shop/\d+$`):           true, // 匹配 /api/v1/shop/:id
+			regexp.MustCompile(`^/api/v1/product/delete/\d+$`): true, // 匹配 /api/v1/product/:id
+
+			regexp.MustCompile(`^/api/v1/product/add$`): true,
+
+			regexp.MustCompile(`^/api/v1/shop/upload$`):       true,
+			regexp.MustCompile(`^/api/v1/shop/order/list$`):   true,
+			regexp.MustCompile(`^/api/v1/shop/order/finish$`): true,
 		}
-		//privateRoutes := map[string]bool{
-		//	"/api/v1/customer": true,
-		//	"/api/v1/shop":     true,
-		//}
+
+		// 使用正则表达式定义 protectedRoutes
+		protected_customer_Routes := map[*regexp.Regexp]bool{
+			regexp.MustCompile(`^/api/v1/customer/\d+$`):        true, // 匹配 /api/v1/customer/:id
+			regexp.MustCompile(`^/api/v1/order/add$`):           true,
+			regexp.MustCompile(`^/api/v1/customer/order/list$`): true,
+			regexp.MustCompile(`^/api/v1/wallet/add$`):          true,
+			regexp.MustCompile(`^/api/v1/wallet/balance$`):      true,
+			regexp.MustCompile(`^/api/v1/customer/upload$`):     true,
+			regexp.MustCompile(`^/api/v1/customer/info$`):       true,
+			regexp.MustCompile(`^/api/v1/friends/add$`):         true,
+			regexp.MustCompile(`^/api/v1/friends$`):             true,
+			regexp.MustCompile(`^/api/v1/friends/wait$`):        true,
+			regexp.MustCompile(`^/api/v1/friends/accept$`):      true,
+			regexp.MustCompile(`^/api/v1/friends/search$`):      true,
+			regexp.MustCompile(`^/api/v1/shop$`):                true,
+		}
 
 		// 检查角色和请求路径
 		allowed := false
@@ -131,10 +143,28 @@ func JwtToken() gin.HandlerFunc {
 			allowed = true
 		} else if role == "customer" {
 			// Role 1 只能访问 protected 和 public 路由
-			allowed = protectedRoutes[requestPath] || publicRoutes[requestPath]
+			if publicRoutes[requestPath] {
+				allowed = true
+			} else {
+				for re := range protected_customer_Routes {
+					if re.MatchString(requestPath) {
+						allowed = true
+						break
+					}
+				}
+			}
 		} else if role == "shop" {
 			// Role 0 只能访问 public 路由
-			allowed = publicRoutes[requestPath]
+			if publicRoutes[requestPath] {
+				allowed = true
+			} else {
+				for re := range protected_shop_Routes {
+					if re.MatchString(requestPath) {
+						allowed = true
+						break
+					}
+				}
+			}
 		}
 
 		if !allowed {

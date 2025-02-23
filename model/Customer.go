@@ -70,6 +70,16 @@ func GetCustomer(tx *gorm.DB, customer string, pageSize int, pageNum int) ([]Cus
 
 }
 
+func GetCustomerInfo(tx *gorm.DB, id uint) (Customer, int) {
+	var customer Customer
+	err = tx.Where("id = ?", id).First(&customer).Error
+	if err != nil {
+		return customer, errmsg.ERROR
+	}
+	customer.Password = ""
+	return customer, errmsg.SUCCESS
+}
+
 func EditCustomer(tx *gorm.DB, id int, customer *Customer) int {
 	var maps = make(map[string]interface{})
 	maps["customer"] = customer.Customer

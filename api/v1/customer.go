@@ -60,6 +60,34 @@ func GetCustomer(c *gin.Context) {
 
 }
 
+// 获取用户个人信息
+func GetCustomerInfo(c *gin.Context) {
+	id, _ := c.Get("user_id")
+
+	uid, ok := id.(uint)
+	if !ok {
+		c.JSON(200, gin.H{
+			"status":  errmsg.ERROR,
+			"message": errmsg.GetErrMsg(errmsg.ERROR),
+		})
+		return
+	}
+	customer, code := model.GetCustomerInfo(model.DB, uid)
+	if code == errmsg.ERROR {
+		c.JSON(200, gin.H{
+			"status":  code,
+			"message": errmsg.GetErrMsg(code),
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"status":  code,
+		"data":    customer,
+		"message": errmsg.GetErrMsg(code),
+	})
+
+}
+
 // 编辑用户
 func EditCustomer(c *gin.Context) {
 	var data model.Customer

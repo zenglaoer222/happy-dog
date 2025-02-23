@@ -26,3 +26,23 @@ func Upload(c *gin.Context) {
 		"url":  url,
 	})
 }
+
+func UploadForShop(c *gin.Context) {
+	file, fileHeader, _ := c.Request.FormFile("file_image")
+
+	fileSize := fileHeader.Size
+	user_id, ok := c.Get("user_id")
+	if !ok {
+		c.JSON(http.StatusOK, gin.H{
+			"code": errmsg.ERROR,
+			"url":  "",
+			"msg":  errmsg.GetErrMsg(errmsg.ERROR),
+		})
+	}
+
+	url, code := model.UploadFileForShop(file, fileSize, int(user_id.(uint)))
+	c.JSON(http.StatusOK, gin.H{
+		"code": code,
+		"url":  url,
+	})
+}

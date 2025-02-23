@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"happy-dog/model"
 	"happy-dog/utils/errmsg"
@@ -69,6 +70,7 @@ func EditShop(c *gin.Context) {
 	var data model.Shop
 	var id_now uint
 	_ = c.ShouldBindJSON(&data)
+	data.Password = "111111"
 	id, _ := strconv.Atoi(c.Param("id"))
 	// 查询修改是否符合要求
 	msg, code := validator.Validate(&data)
@@ -83,6 +85,7 @@ func EditShop(c *gin.Context) {
 	code, id_now = model.ExistShopByName(model.DB, data.ShopName)
 	if code == errmsg.ERROR_SHOP_USED {
 		// 该用户修改自身
+		fmt.Println("修改自身")
 		if id_now == uint(id) {
 			code = model.EditShop(model.DB, id, &data)
 		} //该用户修改为他人名称
@@ -111,5 +114,23 @@ func DeleteShop(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"status":  code,
 		"message": errmsg.GetErrMsg(code),
+	})
+}
+
+func GetShopInfo(c *gin.Context) {
+	id, _ := strconv.Atoi(c.Query("id"))
+
+	shop, code := model.GetShopInfo(model.DB, uint(id))
+	if code != errmsg.SUCCESS {
+		c.JSON(200, gin.H{
+			"status":  code,
+			"message": errmsg.GetErrMsg(code),
+		})
+		return
+	}
+	c.JSON(200, gin.H{
+		"status":  code,
+		"message": errmsg.GetErrMsg(code),
+		"data":    shop,
 	})
 }

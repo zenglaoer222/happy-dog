@@ -23,8 +23,9 @@ const (
 	ERROR_PRODUCT_CREATE_FAIL = 3001
 	ERROR_PRODUCT_NOT_EXIST   = 3002
 	// code = 4000 订单模块的错误
-	ERROR_ORDER_CREATE_FAIL  = 4001
-	ERROR_ORDER_INQUIRE_FAIL = 4002
+	ERROR_ORDER_CREATE_FAIL   = 4001
+	ERROR_ORDER_INQUIRE_FAIL  = 4002
+	ERROR_ORDER_SHOP_NOT_SAME = 4003
 	// code = 5000 商品列表的错误
 	// code = 6000 钱包的错误
 	ERROR_WALLET_CREATE_FAIL        = 6001
@@ -56,6 +57,7 @@ var codemsg = map[int]string{
 	ERROR_PRODUCT_NOT_EXIST:         "商品不存在",
 	ERROR_ORDER_CREATE_FAIL:         "创建订单失败",
 	ERROR_ORDER_INQUIRE_FAIL:        "查询订单失败",
+	ERROR_ORDER_SHOP_NOT_SAME:       "商家订单不一致",
 	ERROR_WALLET_CREATE_FAIL:        "创建钱包失败",
 	ERROR_WALLET_NOT_EXIST:          "钱包不存在",
 	ERROR_WALLET_EXIST:              "钱包已存在",

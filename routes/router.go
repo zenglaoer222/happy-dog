@@ -21,21 +21,26 @@ func InitRouter() {
 		// 商家模块
 
 		private.DELETE("shop/:id", v1.DeleteShop)
+
 	}
 
 	protected_shop := r.Group("api/v1")
 	protected_shop.Use(middleware.JwtToken())
 	{
+		//商家
+		protected_shop.POST("shop/upload", v1.UploadForShop)
+		protected_shop.PUT("shop/:id", v1.EditShop)
 
 		// 商品模块
 		protected_shop.POST("shop/add", v1.AddShop)
 
-		protected_shop.PUT("shop/:id", v1.EditShop)
-
 		// 订单模块
+		protected_shop.GET("shop/order/list", v1.GetOrderForShop)
+		protected_shop.POST("shop/order/finish", v1.FinishOrder)
 
 		// 商品模块
 		protected_shop.POST("product/add", v1.CreateProduct)
+		protected_shop.DELETE("product/delete/:pid", v1.DeleteProduct)
 
 		// 商品列表模块
 
@@ -48,8 +53,10 @@ func InitRouter() {
 		protected_customer.PUT("customer/:id", v1.EditCustomer)
 
 		protected_customer.POST("order/add", v1.CreateOrder)
-		protected_customer.GET("order", v1.GetOrder)
-		protected_customer.POST("customer/update", v1.Upload)
+		protected_customer.GET("customer/order/list", v1.GetOrder)
+		protected_customer.POST("customer/upload", v1.Upload)
+
+		protected_customer.GET("customer/info", v1.GetCustomerInfo)
 
 		// 余额模块
 		protected_customer.POST("wallet/add", v1.CreateWallet)
@@ -71,7 +78,11 @@ func InitRouter() {
 		public.POST("customer/add", v1.AddCustomer)
 		public.POST("customer/login", v1.Login)
 		public.POST("manager/login", v1.ManagerLogin)
+		public.POST("shop/login", v1.ShopLogin)
+		public.GET("shop/info", v1.GetShopInfo)
 		//public.GET("message", v1.ReceiveMsg)
+
+		public.GET("product/list", v1.GetProductList)
 
 		// 消息模块
 		public.GET("message/add", v1.ConCreate)
